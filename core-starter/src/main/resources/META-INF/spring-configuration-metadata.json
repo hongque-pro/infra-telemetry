@@ -1,0 +1,48 @@
+{
+  "group": [
+    {
+      "name": "infra.telemetry",
+      "type": "com.labijie.infra.telemetry.configuration.TelemetryProperties"
+    },
+    {
+      "name": "infra.telemetry.tracing",
+      "type": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties"
+    },
+    {
+      "name": "infra.telemetry.metric",
+      "type": "com.labijie.infra.telemetry.configuration.metric.MetricProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "infra.telemetry.tracing.enabled",
+      "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "infra.telemetry.tracing.export-strategy",
+      "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
+      "type": "com.labijie.infra.telemetry.tracing.ExportStrategy",
+      "defaultValue": "Simple"
+    },
+    {
+      "name": "infra.telemetry.tracing.processor-properties",
+      "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
+      "type": "java.util.Properties"
+    },
+    {
+      "name": "infra.telemetry.tracing.built-in-exporter",
+      "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
+      "type": "com.labijie.infra.telemetry.configuration.tracing.BuiltInExport",
+      "defaultValue": "Kafka"
+    },
+
+    {
+      "name": "infra.telemetry.metric.enabled",
+      "sourceType": "com.labijie.infra.telemetry.configuration.metric.MetricProperties",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    }
+  ]
+}

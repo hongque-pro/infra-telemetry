@@ -1,0 +1,6 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.labijie.infra.telemetry.configuration.TelemetryAutoConfiguration,\
+  com.labijie.infra.telemetry.configuration.metric.WebSecurityAutoConfiguration
+  
+org.springframework.context.ApplicationListener=\
+  com.labijie.infra.telemetry.configuration.metric.MetricEnvironmentPreparedListener
