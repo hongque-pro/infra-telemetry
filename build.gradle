@@ -11,6 +11,7 @@ buildscript {
         kafka_version='2.6.0'
 
         micrometer_version = '1.6.0'
+        prometheus_version='0.9.0'
 
         kryo_version = '5.0.0'
 

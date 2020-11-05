@@ -12,6 +12,7 @@ import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import io.opentelemetry.trace.Tracer
 import io.opentelemetry.trace.propagation.HttpTraceContext
+import org.slf4j.LoggerFactory
 import java.util.*
 
 
@@ -21,11 +22,17 @@ class TracingManager(
     private val exporters: List<SpanExporter>,
     private val textMapPropagator: TextMapPropagator? = null
 ) {
+    companion object{
+        private val logger = LoggerFactory.getLogger(TracingManager::class.java)
+    }
+
     private val sdkProvider = TracerSdkProvider.builder().setIdsGenerator(TracerIdsGenertor(idGenerator)).build().apply {
         if (exporters.count() > 0) {
             val processors = exporters.map { it.createProcessor(properties.exportStrategy) }
             val processor = if (processors.count() > 1) MultiSpanProcessor.create(processors) else processors.first()
             this.addSpanProcessor(processor)
+        }else{
+            logger.warn("Can not found any trace exportor, configured built-in exporter: ${properties.builtInExporter}, make sure 'org.apache.kafka:kafka-clients' package is in your classpath.")
         }
     }
 
@@ -37,7 +44,7 @@ class TracingManager(
     }
 
     private fun <T : ConfigBuilder<*>> T.configureProcessorBuilder(): T {
-        val properties = Properties(properties.processorProperties)
+        val properties = properties.processorProperties
         this.readProperties(properties)
         this.readEnvironmentVariables()
         return this

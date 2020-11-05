@@ -8,13 +8,16 @@ import com.labijie.infra.telemetry.tracing.export.LoggingSpanExporter
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import io.opentelemetry.trace.propagation.HttpTraceContext
+import org.apache.kafka.clients.producer.KafkaProducer
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import java.util.stream.Collectors
 
 @Configuration
@@ -25,7 +28,7 @@ class TelemetryAutoConfiguration {
         const val MetricEnabledConfigurationKey = "infra.telemetry.tracing.metric.enabled"
         const val TracingEnabledConfigurationKey = "infra.telemetry.tracing.tracing.enabled"
         const val TracingExporterConfigurationKey = "infra.telemetry.tracing.tracing.built-in-exporter"
-        const val TracingPropertiesConfigurationKey = "infra.telemetry.tracing.tracing.processor-properties"
+        const val TracingPropertiesConfigurationKey = "infra.telemetry.tracing.processor-properties"
     }
 
     @Configuration
@@ -45,13 +48,14 @@ class TelemetryAutoConfiguration {
         fun loggingSpanExporter(): LoggingSpanExporter = LoggingSpanExporter()
 
         @Bean
+        @ConditionalOnClass(name = ["org.apache.kafka.clients.producer.KafkaProducer"])
         @ConditionalOnProperty(
             name = [TracingExporterConfigurationKey],
             havingValue = "Kafka",
             matchIfMissing = true
         )
-        fun kafkaSpanExporter(properties: TelemetryProperties): KafkaSpanExporter {
-            return kafkaSpanExporter(properties)
+        fun kafkaSpanExporter(environment: Environment, properties: TelemetryProperties): KafkaSpanExporter {
+            return KafkaSpanExporter(environment, properties.tracing)
         }
 
 

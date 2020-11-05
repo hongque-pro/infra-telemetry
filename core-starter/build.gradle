@@ -4,8 +4,6 @@ dependencies {
 
 //    implementation "io.opentelemetry:opentelemetry-sdk-tracing:$open_telemetry_version"
     implementation "io.opentelemetry:opentelemetry-sdk-extension-otproto:$open_telemetry_version"
-
-
     implementation "org.slf4j:jul-to-slf4j:$slf4j_version"
 
     implementation ("io.micrometer:micrometer-registry-prometheus:$micrometer_version"){
@@ -14,6 +12,8 @@ dependencies {
     implementation ("org.springframework.boot:spring-boot-starter-actuator"){
         exclude group: "io.micrometer"
     }
+
+    implementation "io.prometheus:simpleclient_common:$prometheus_version"
 
     compileOnly "org.apache.kafka:kafka-clients:$kafka_version"
     compileOnly "org.springframework.security:spring-security-web"
