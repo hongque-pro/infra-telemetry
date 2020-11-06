@@ -1,6 +1,8 @@
 package com.labijie.infra.telemetry.configuration
 
 import com.labijie.infra.IIdGenerator
+import com.labijie.infra.spring.configuration.getApplicationName
+import com.labijie.infra.telemetry.TelemetryBootstrapRunner
 import com.labijie.infra.telemetry.tracing.TracingManager
 import com.labijie.infra.telemetry.configuration.tracing.TracerFactoryBean
 import com.labijie.infra.telemetry.tracing.export.KafkaSpanExporter
@@ -29,6 +31,11 @@ class TelemetryAutoConfiguration {
         const val TracingEnabledConfigurationKey = "infra.telemetry.tracing.tracing.enabled"
         const val TracingExporterConfigurationKey = "infra.telemetry.tracing.tracing.built-in-exporter"
         const val TracingPropertiesConfigurationKey = "infra.telemetry.tracing.processor-properties"
+    }
+
+    @Bean
+    fun telemetryBootstrapRunner(): TelemetryBootstrapRunner {
+        return TelemetryBootstrapRunner()
     }
 
     @Configuration
@@ -61,6 +68,7 @@ class TelemetryAutoConfiguration {
 
         @Bean
         fun tracingManager(
+            environment: Environment,
             idGenerator: IIdGenerator,
             telemetryProperties: TelemetryProperties,
             exporters: ObjectProvider<SpanExporter>,
@@ -69,8 +77,9 @@ class TelemetryAutoConfiguration {
         ): TracingManager {
 
             val exporterList = exporters.orderedStream().collect(Collectors.toList())
-
+            val applicationName: String? = environment.getProperty("spring.application.name")
             return TracingManager(
+                applicationName,
                 idGenerator,
                 telemetryProperties.tracing,
                 exporterList,

@@ -1,10 +1,10 @@
 package com.labijie.infra.telemetry
 
-import com.labijie.infra.utils.logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
+import kotlin.system.exitProcess
 
 /**
  * Created with IntelliJ IDEA.
@@ -31,9 +31,9 @@ class TelemetryBootstrapRunner : CommandLineRunner, ApplicationContextAware {
                 it.initialize()
             }
         }catch (ex:Throwable){
-            this.logger.error("Tracking service initailize fault.", ex)
-            System.exit(-9999)
+            logger.error("Tracking service initailize fault.", ex)
+            exitProcess(-9999)
         }
-        this.logger.info("Tracking service was initialized.")
+        logger.info("Tracking service was initialized.")
     }
 }

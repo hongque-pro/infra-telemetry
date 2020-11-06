@@ -5,6 +5,7 @@ import com.labijie.infra.telemetry.configuration.TelemetryAutoConfiguration
 import com.labijie.infra.telemetry.configuration.tracing.TracingProperties
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.sdk.common.CompletableResultCode
+import io.opentelemetry.trace.Span
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
