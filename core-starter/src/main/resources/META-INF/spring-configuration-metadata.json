@@ -34,7 +34,7 @@
     {
       "name": "infra.telemetry.tracing.built-in-exporter",
       "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
-      "type": "com.labijie.infra.telemetry.configuration.tracing.BuiltInExport",
+      "type": "com.labijie.infra.telemetry.configuration.tracing.BuiltInExporterType",
       "defaultValue": "Kafka"
     },
 
