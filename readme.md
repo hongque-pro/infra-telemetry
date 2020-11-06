@@ -25,7 +25,7 @@
 
 ## 遥测数据采集
 
-metric: 使用 prometheus 采集
+metric: 使用 prometheus 采集(参考：[Prometheus 文档](https://prometheus.io/docs/introduction/overview/))
 
 trace: 使用 opentelemetry-collector 采集（参考：[OpenTelemetry 文档](https://opentelemetry.io/docs/collector/configuration/)）
 > - 内置的 kafka 导出器需要配合 opentelemetry-collector-contrib 中的 kafka 采集器
