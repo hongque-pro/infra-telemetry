@@ -25,10 +25,14 @@
 
 ## 遥测数据采集
 
-metric: 使用 prometheus 采集
+metric: 使用 prometheus 采集(参考：[Prometheus 文档](https://prometheus.io/docs/introduction/overview/))
 
-trace: 使用 opentelemetry-collector 采集（参考：https://opentelemetry.io/docs/collector/configuration/）
+trace: 使用 opentelemetry-collector 采集（参考：[OpenTelemetry 文档](https://opentelemetry.io/docs/collector/configuration/)）
 > - 内置的 kafka 导出器需要配合 opentelemetry-collector-contrib 中的 kafka 采集器
 > - 推荐 collector 使用 elastic-exporter 直接导入 elastic amp 以减少中间件依赖
+
+## OpenTelemetry 使用帮助
+
+参考[OpenTelemetry文档](https://github.com/open-telemetry/opentelemetry-java/blob/master/QUICKSTART.md)
 
 
