@@ -5,17 +5,14 @@ import com.labijie.infra.telemetry.configuration.TelemetryAutoConfiguration
 import com.labijie.infra.telemetry.configuration.tracing.TracingProperties
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.sdk.common.CompletableResultCode
-import io.opentelemetry.trace.Span
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
-import org.apache.kafka.common.config.ConfigException
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import org.springframework.core.env.Environment
 import java.time.Duration
-import java.util.*
 
 
 open class KafkaSpanExporter(
@@ -26,22 +23,21 @@ open class KafkaSpanExporter(
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaSpanExporter::class.java)
 
-        private fun Properties.propsToKafkaMap(): MutableMap<String, Any> {
+        private fun MutableMap<String, out Any>.propsToKafkaMap(): MutableMap<String, Any> {
             val map: MutableMap<String, Any> = mutableMapOf()
             for ((key, value) in this) {
-                val k = (key as? String) ?:throw ConfigException(key.toString(), value, "Key must be a string.")
-                if (k in ProducerConfig.configNames()) {
-                    map[k] = this.getProperty(k)
+                if (key in ProducerConfig.configNames()) {
+                    map[key] = value
                 }
             }
             return map
         }
     }
 
-    private val topic: String = tracingProperties.processorProperties.getProperty("topic", "telemetry-spans").toString()
+    private val topic: String = tracingProperties.exporterProperties.getOrDefault("topic", "telemetry-spans").toString()
 
     init {
-        if (!tracingProperties.processorProperties.contains("topic")) {
+        if (!tracingProperties.exporterProperties.contains("topic")) {
             logger.warn("Kafka trace exporter missed property 'topic' for kafka exporter:  'telemetry-spans' be used.")
         }
     }
@@ -50,7 +46,7 @@ open class KafkaSpanExporter(
     private val kafkaProducer = createProducer()
 
     private fun createProducer(): KafkaProducer<String, ByteArray> {
-        val ps = tracingProperties.processorProperties.propsToKafkaMap()
+        val ps = tracingProperties.exporterProperties.propsToKafkaMap()
         ps.checkKey(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG)
         if (ps.putIfAbsent(ProducerConfig.CLIENT_ID_CONFIG, environment.getApplicationName(false)) != null) {
             logger.warn("Kafka trace exporter missed property '${ProducerConfig.CLIENT_ID_CONFIG}' for kafka exporter:  'infra-telemetry-exporter' be used.")

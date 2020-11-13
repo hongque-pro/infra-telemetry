@@ -19,6 +19,7 @@ import io.opentelemetry.trace.Tracer
 import io.opentelemetry.trace.TracingContextUtils
 import io.opentelemetry.trace.propagation.HttpTraceContext
 import org.slf4j.LoggerFactory
+import java.util.*
 
 
 class TracingManager(
@@ -31,18 +32,18 @@ class TracingManager(
     companion object {
         private val logger = LoggerFactory.getLogger(TracingManager::class.java)
 
-        fun extractSpan(map: Map<String, Any>): Span {
-            val context = OpenTelemetry.getPropagators()
+        fun extractSpan(map: Map<String, Any>, context: Context? = null): Span {
+            val ctx = context ?: OpenTelemetry.getPropagators()
                 .textMapPropagator
                 .extract(Context.current(), map, MapGetter)
 
-            return TracingContextUtils.getSpan(context)
+            return TracingContextUtils.getSpan(ctx)
         }
 
-        fun injectSpan(map: MutableMap<String, Any>) {
+        fun injectSpan(map: MutableMap<String, in String>, context: Context? = null) {
             OpenTelemetry.getPropagators()
                 .textMapPropagator
-                .inject(Context.current(), map, MapSetter)
+                .inject(context ?: Context.current(), map, MapSetter)
         }
     }
 
@@ -55,7 +56,7 @@ class TracingManager(
                     if (processors.count() > 1) MultiSpanProcessor.create(processors) else processors.first()
                 this.addSpanProcessor(processor)
             } else {
-                logger.warn("Can not found any trace exportor, configured built-in exporter: ${properties.builtInExporter}, make sure 'org.apache.kafka:kafka-clients' package is in your classpath.")
+                logger.warn("Can not found any trace exportor, configured exporter: ${properties.exporter}, make sure 'org.apache.kafka:kafka-clients' package is in your classpath.")
             }
         }
 
@@ -67,8 +68,13 @@ class TracingManager(
     }
 
     private fun <T : ConfigBuilder<*>> T.configureProcessorBuilder(): T {
-        val properties = properties.processorProperties
-        this.readProperties(properties)
+        val props =  Properties()
+        properties.processorProperties.forEach { (key, value) ->
+            if(value.isNotBlank()) {
+                props[key] = value
+            }
+        }
+        this.readProperties(props)
         this.readEnvironmentVariables()
         return this
     }

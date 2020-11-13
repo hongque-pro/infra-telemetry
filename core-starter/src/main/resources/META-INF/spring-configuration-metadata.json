@@ -27,15 +27,20 @@
       "defaultValue": "Simple"
     },
     {
-      "name": "infra.telemetry.tracing.processor-properties",
+      "name": "infra.telemetry.tracing.exporter-properties",
       "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
-      "type": "java.util.Properties"
+      "type": "java.util.Map<java.lang.String, java.lang.String>"
     },
     {
-      "name": "infra.telemetry.tracing.built-in-exporter",
+      "name": "infra.telemetry.tracing.processor-properties",
       "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
-      "type": "com.labijie.infra.telemetry.configuration.tracing.BuiltInExporterType",
-      "defaultValue": "Kafka"
+      "type": "java.util.Map<java.lang.String, java.lang.String>"
+    },
+    {
+      "name": "infra.telemetry.tracing.exporter",
+      "sourceType": "com.labijie.infra.telemetry.configuration.tracing.TracingProperties",
+      "type": "java.lang.String",
+      "defaultValue": "kafka"
     },
 
     {
@@ -43,6 +48,69 @@
       "sourceType": "com.labijie.infra.telemetry.configuration.metric.MetricProperties",
       "type": "java.lang.Boolean",
       "defaultValue": true
+    }
+  ],
+  "hints": [
+    {
+      "name": "infra.telemetry.tracing.exporter",
+      "values": [
+        {
+          "value": "kafka"
+        },
+        {
+          "value": "logging"
+        }
+      ]
+    },
+    {
+      "name": "infra.telemetry.tracing.exporter-properties.keys",
+      "values": [
+        {
+          "value": "key.serializer"
+        },
+        {
+          "value": "value.serializer"
+        },
+        {
+          "value": "bootstrap.servers"
+        },
+        {
+          "value": "topic"
+        }
+      ]
+    },
+    {
+      "name": "infra.telemetry.tracing.processor-properties.keys",
+      "values": [
+        {
+          "value": "otel.config.sampler.probability",
+          "description": "Sampler which is used when constructing a new span (default: 1)"
+        },
+        {
+          "value": "otel.span.attribute.count.limit",
+          "description": "Max number of attributes per span, extra will be dropped (default: 1000)"
+        },
+        {
+          "value": "otel.span.event.count.limit",
+          "description": "Max number of Events per span, extra will be dropped (default: 1000)"
+        },
+        {
+          "value": "otel.span.link.count.limit",
+          "description": "Max number of Link entries per span, extra will be dropped (default: 1000)"
+        },
+        {
+          "value": "otel.config.max.event.attrs",
+          "description": "Max number of attributes per event, extra will be dropped (default: 32)"
+        },
+        {
+          "value": "otel.config.max.link.attrs",
+          "description": "Max number of attributes per link, extra will be dropped (default: 32)"
+        },
+        {
+          "value": "otel.config.max.attr.length",
+          "description": "Max length of string attribute value in characters, too long will be truncated (default: unlimited)"
+        }
+      ]
     }
   ]
 }

@@ -29,7 +29,7 @@ class TelemetryAutoConfiguration {
     companion object {
         const val MetricEnabledConfigurationKey = "infra.telemetry.tracing.metric.enabled"
         const val TracingEnabledConfigurationKey = "infra.telemetry.tracing.tracing.enabled"
-        const val TracingExporterConfigurationKey = "infra.telemetry.tracing.tracing.built-in-exporter"
+        const val TracingExporterConfigurationKey = "infra.telemetry.tracing.tracing.exporter"
         const val TracingPropertiesConfigurationKey = "infra.telemetry.tracing.processor-properties"
     }
 
@@ -49,7 +49,7 @@ class TelemetryAutoConfiguration {
         @Bean
         @ConditionalOnProperty(
             name = [TracingExporterConfigurationKey],
-            havingValue = "Logging",
+            havingValue = "logging",
             matchIfMissing = false
         )
         fun loggingSpanExporter(): LoggingSpanExporter = LoggingSpanExporter()
@@ -58,7 +58,7 @@ class TelemetryAutoConfiguration {
         @ConditionalOnClass(name = ["org.apache.kafka.clients.producer.KafkaProducer"])
         @ConditionalOnProperty(
             name = [TracingExporterConfigurationKey],
-            havingValue = "Kafka",
+            havingValue = "kafka",
             matchIfMissing = true
         )
         fun kafkaSpanExporter(environment: Environment, properties: TelemetryProperties): KafkaSpanExporter {
