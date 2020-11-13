@@ -31,9 +31,9 @@ class TelemetryBootstrapRunner : CommandLineRunner, ApplicationContextAware {
                 it.initialize()
             }
         }catch (ex:Throwable){
-            logger.error("Tracking service initailize fault.", ex)
+            logger.error("Infra telemetry service initailize fault.", ex)
             exitProcess(-9999)
         }
-        logger.info("Tracking service was initialized.")
+        logger.info("Infra telemetry service was initialized.")
     }
 }
