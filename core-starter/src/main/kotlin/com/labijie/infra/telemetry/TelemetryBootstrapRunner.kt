@@ -1,5 +1,6 @@
 package com.labijie.infra.telemetry
 
+import com.labijie.infra.telemetry.configuration.TelemetryProperties
 import org.slf4j.LoggerFactory
 import org.springframework.boot.CommandLineRunner
 import org.springframework.context.ApplicationContext
@@ -25,6 +26,7 @@ class TelemetryBootstrapRunner : CommandLineRunner, ApplicationContextAware {
     }
 
     override fun run(vararg args: String?) {
+        val properties =  this.applicationContext.getBean(TelemetryProperties::class.java)
         try {
             val initializers = this.applicationContext.getBeanProvider(ITelemetryInitializer::class.java)
             initializers.orderedStream().forEach {
@@ -34,6 +36,6 @@ class TelemetryBootstrapRunner : CommandLineRunner, ApplicationContextAware {
             logger.error("Infra telemetry service initailize fault.", ex)
             exitProcess(-9999)
         }
-        logger.info("Infra telemetry service was initialized.")
+        logger.info("Infra telemetry service was initialized ( tracing exporter: ${properties.tracing.exporter} ).")
     }
 }
