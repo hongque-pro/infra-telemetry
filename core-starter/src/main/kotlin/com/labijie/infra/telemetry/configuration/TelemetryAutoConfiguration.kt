@@ -28,8 +28,8 @@ class TelemetryAutoConfiguration {
 
     companion object {
         const val MetricEnabledConfigurationKey = "infra.telemetry.tracing.metric.enabled"
-        const val TracingEnabledConfigurationKey = "infra.telemetry.tracing.tracing.enabled"
-        const val TracingExporterConfigurationKey = "infra.telemetry.tracing.tracing.exporter"
+        const val TracingEnabledConfigurationKey = "infra.telemetry.tracing.enabled"
+        const val TracingExporterConfigurationKey = "infra.telemetry.tracing.exporter"
         const val TracingPropertiesConfigurationKey = "infra.telemetry.tracing.processor-properties"
     }
 
