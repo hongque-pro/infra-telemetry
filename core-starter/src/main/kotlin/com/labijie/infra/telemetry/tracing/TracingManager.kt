@@ -14,9 +14,7 @@ import io.opentelemetry.sdk.trace.*
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
-import io.opentelemetry.trace.Span
-import io.opentelemetry.trace.Tracer
-import io.opentelemetry.trace.TracingContextUtils
+import io.opentelemetry.trace.*
 import io.opentelemetry.trace.propagation.HttpTraceContext
 import org.slf4j.LoggerFactory
 import java.util.*
@@ -48,7 +46,7 @@ class TracingManager(
     }
 
     private val sdkProvider = TracerSdkProvider.builder()
-        .setIdsGenerator(TracerIdsGenerator(idGenerator))
+        .setIdsGenerator(TelemetryIdsGenerator(idGenerator))
         .build().apply {
             if (exporters.count() > 0) {
                 val processors = exporters.map { it.createProcessor(properties.exportStrategy) }
@@ -90,11 +88,5 @@ class TracingManager(
         configurePropagator()
         sdkProvider.get(applicationName.ifNullOrBlank { "infra-telemetry" })
     }
-
-    private class TracerIdsGenerator(private val generator: IIdGenerator) : IdsGenerator {
-        override fun generateSpanId(): String = generator.newId().toString()
-        override fun generateTraceId(): String = generator.newId().toString()
-    }
-
 
 }

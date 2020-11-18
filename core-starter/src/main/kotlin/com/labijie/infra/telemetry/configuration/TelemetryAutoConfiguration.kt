@@ -1,20 +1,17 @@
 package com.labijie.infra.telemetry.configuration
 
 import com.labijie.infra.IIdGenerator
-import com.labijie.infra.spring.configuration.getApplicationName
 import com.labijie.infra.telemetry.TelemetryBootstrapRunner
-import com.labijie.infra.telemetry.tracing.TracingManager
 import com.labijie.infra.telemetry.configuration.tracing.TracerFactoryBean
+import com.labijie.infra.telemetry.tracing.TracingManager
 import com.labijie.infra.telemetry.tracing.export.KafkaSpanExporter
 import com.labijie.infra.telemetry.tracing.export.LoggingSpanExporter
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import io.opentelemetry.trace.propagation.HttpTraceContext
-import org.apache.kafka.clients.producer.KafkaProducer
 import org.springframework.beans.factory.ObjectProvider
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
