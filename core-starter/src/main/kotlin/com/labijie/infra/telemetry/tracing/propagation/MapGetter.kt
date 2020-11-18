@@ -6,7 +6,7 @@ object MapGetter : TextMapPropagator.Getter<Map<String, Any>> {
     internal const val Prefix = "__span_"
     override fun get(carrier: Map<String, Any>?, key: String?): String? {
         if(carrier != null && !key.isNullOrBlank()){
-            carrier["$Prefix$key"]
+            return carrier["$Prefix$key"]?.toString()
         }
         return null
     }
