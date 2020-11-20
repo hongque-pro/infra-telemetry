@@ -108,15 +108,14 @@ internal object SpanAdapter {
     }
 
     private fun toProtoSpanKind(kind: Kind?): SpanKind {
-        when (kind) {
+        return when (kind) {
             Kind.INTERNAL -> SpanKind.SPAN_KIND_INTERNAL
             Kind.SERVER -> SpanKind.SPAN_KIND_SERVER
             Kind.CLIENT -> SpanKind.SPAN_KIND_CLIENT
             Kind.PRODUCER -> SpanKind.SPAN_KIND_PRODUCER
             Kind.CONSUMER -> SpanKind.SPAN_KIND_CONSUMER
-            else -> SpanKind.UNRECOGNIZED
+            else -> SpanKind.SPAN_KIND_UNSPECIFIED
         }
-        return SpanKind.UNRECOGNIZED
     }
 
     private fun toProtoSpanEvent(event: Event): Span.Event {
