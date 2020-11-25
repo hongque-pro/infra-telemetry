@@ -1,5 +1,6 @@
+server:
+  port: 29292
 infra:
   telemetry:
     tracing:
-      processor-properties:
-        bootstrap.servers: 192.168.199.236:9092
+      exporter: logging

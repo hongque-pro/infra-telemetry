@@ -1,9 +1,7 @@
 package com.labijie.infra.telemetry.tracing
-
-import io.opentelemetry.context.ContextUtils
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.context.Scope
-import io.opentelemetry.trace.EndSpanOptions
-import io.opentelemetry.trace.Span
+import java.time.Instant
 
 class ScopeAndSpan(val scope: Scope, val span: Span, private val closeCallbacks: (()->Unit)? = null) : AutoCloseable {
     private var hasEnded: Boolean = false
@@ -13,14 +11,14 @@ class ScopeAndSpan(val scope: Scope, val span: Span, private val closeCallbacks:
         this.close(null)
     }
 
-    fun endSpan(options: EndSpanOptions? = null) {
+    fun endSpan(timestamp: Instant? = null) {
         if (!hasEnded) {
             synchronized(syncRoot) {
                 if (!hasEnded) {
-                    if (options == null) {
+                    if(timestamp != null) {
+                        span.end(timestamp)
+                    }else{
                         span.end()
-                    } else {
-                        span.end(options)
                     }
                     hasEnded = true
                 }
@@ -28,8 +26,8 @@ class ScopeAndSpan(val scope: Scope, val span: Span, private val closeCallbacks:
         }
     }
 
-    fun close(options: EndSpanOptions?) {
-        endSpan(options)
+    fun close(timestamp: Instant?) {
+        endSpan(timestamp)
         scope.close()
         this.closeCallbacks?.invoke()
     }

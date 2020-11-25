@@ -1,7 +1,7 @@
 package com.labijie.infra.telemetry.configuration.tracing
 
 import com.labijie.infra.telemetry.tracing.TracingManager
-import io.opentelemetry.trace.Tracer
+import io.opentelemetry.api.trace.Tracer
 import org.springframework.beans.factory.FactoryBean
 
 class TracerFactoryBean(private val tracingManager: TracingManager) : FactoryBean<Tracer> {

@@ -1,12 +1,12 @@
 package com.labijie.infra.telemetry.tracing
 
 import com.labijie.infra.IIdGenerator
-import io.opentelemetry.sdk.trace.IdsGenerator
-import io.opentelemetry.trace.SpanId
-import io.opentelemetry.trace.TraceId
+import io.opentelemetry.api.trace.SpanId
+import io.opentelemetry.api.trace.TraceId
+import io.opentelemetry.sdk.trace.IdGenerator
 import java.util.*
 
-class TelemetryIdsGenerator(private val generator: IIdGenerator) : IdsGenerator {
+class TelemetryIdsGenerator(private val generator: IIdGenerator) : IdGenerator {
     override fun generateSpanId(): String {
         return SpanId.fromLong(generator.newId())
     }

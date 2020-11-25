@@ -10,8 +10,8 @@ class LoggingSpanExporter : SpanExporter {
         private val logger = LoggerFactory.getLogger(LoggingSpanExporter::class.java)
     }
 
-    override fun export(spans: MutableCollection<SpanData>?): CompletableResultCode {
-        if (spans != null) {
+    override fun export(spans: MutableCollection<SpanData>): CompletableResultCode? {
+        if (spans.isNotEmpty()) {
             for (span in spans) {
                 logger.info("tracing-span: $span")
             }

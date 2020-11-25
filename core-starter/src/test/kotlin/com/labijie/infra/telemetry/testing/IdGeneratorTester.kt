@@ -2,7 +2,7 @@ package com.labijie.infra.telemetry.testing
 
 import com.labijie.infra.impl.DebugIdGenerator
 import com.labijie.infra.telemetry.tracing.TelemetryIdsGenerator
-import io.opentelemetry.trace.TraceId
+import io.opentelemetry.api.trace.TraceId
 import org.junit.jupiter.api.Assertions
 import kotlin.test.Test
 
