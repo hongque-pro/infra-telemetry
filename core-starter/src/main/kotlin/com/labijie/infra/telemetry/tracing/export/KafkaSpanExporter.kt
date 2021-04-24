@@ -3,6 +3,7 @@ package com.labijie.infra.telemetry.tracing.export
 import com.labijie.infra.spring.configuration.getApplicationName
 import com.labijie.infra.telemetry.configuration.TelemetryAutoConfiguration
 import com.labijie.infra.telemetry.configuration.tracing.TracingProperties
+import com.labijie.infra.utils.throwIfNecessary
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.apache.kafka.clients.producer.KafkaProducer
@@ -12,12 +13,13 @@ import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
 import org.springframework.core.env.Environment
+import java.lang.Exception
 import java.time.Duration
 
 
 open class KafkaSpanExporter(
-    protected val environment: Environment,
-    protected val tracingProperties: TracingProperties
+        protected val environment: Environment,
+        protected val tracingProperties: TracingProperties
 ) : AbstractOltpSpanExporter() {
 
     companion object {
@@ -34,7 +36,8 @@ open class KafkaSpanExporter(
         }
     }
 
-    private val topic: String = tracingProperties.exporter.properties.getOrDefault("topic", "telemetry-spans").toString()
+    private val topic: String = tracingProperties.exporter.properties.getOrDefault("topic", "telemetry-spans")
+    private var kafkaProducerInitialized: Boolean = false
 
     init {
         if (!tracingProperties.exporter.properties.contains("topic")) {
@@ -44,6 +47,10 @@ open class KafkaSpanExporter(
 
 
     private val kafkaProducer: KafkaProducer<String, ByteArray> by lazy {
+        createKafkaProducer()
+    }
+
+    private fun createKafkaProducer(): KafkaProducer<String, ByteArray> {
         val ps = tracingProperties.exporter.properties.propsToKafkaMap()
         ps.checkKey(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG)
         if (ps.putIfAbsent(ProducerConfig.CLIENT_ID_CONFIG, environment.getApplicationName(false)) != null) {
@@ -53,7 +60,8 @@ open class KafkaSpanExporter(
         ps.putIfAbsent(ProducerConfig.ACKS_CONFIG, "0")
         ps[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
         ps[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = ByteArraySerializer::class.java.name
-        KafkaProducer(ps)
+        this.kafkaProducerInitialized = true
+        return KafkaProducer(ps)
     }
 
     private fun Map<String, Any>.checkKey(key: String) {
@@ -72,11 +80,22 @@ open class KafkaSpanExporter(
     }
 
     override fun flush(): CompletableResultCode {
-        return CompletableResultCode.ofSuccess()
+        if (!kafkaProducerInitialized) {
+            return CompletableResultCode.ofSuccess()
+        }
+        return try {
+            this.kafkaProducer.flush()
+            CompletableResultCode.ofSuccess()
+        } catch (e: Exception) {
+            e.throwIfNecessary()
+            CompletableResultCode.ofFailure()
+        }
     }
 
     override fun shutdown(): CompletableResultCode {
-         kafkaProducer.close(Duration.ofMinutes(1))
+        if (kafkaProducerInitialized) {
+            kafkaProducer.close(Duration.ofMinutes(1))
+        }
         return CompletableResultCode.ofSuccess()
     }
 }
