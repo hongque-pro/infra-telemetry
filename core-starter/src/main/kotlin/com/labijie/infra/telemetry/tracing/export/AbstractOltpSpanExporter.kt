@@ -1,5 +1,6 @@
 package com.labijie.infra.telemetry.tracing.export
 
+import io.opentelemetry.exporter.otlp.internal.SpanAdapter
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.trace.data.SpanData
