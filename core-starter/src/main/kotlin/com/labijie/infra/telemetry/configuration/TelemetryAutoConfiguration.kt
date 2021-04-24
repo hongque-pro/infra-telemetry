@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Lazy
 import org.springframework.core.env.Environment
 import java.util.stream.Collectors
 
@@ -44,7 +45,7 @@ class TelemetryAutoConfiguration {
 
         @Bean
         @ConditionalOnClass(name = ["org.apache.kafka.clients.producer.KafkaProducer"])
-        @ConditionalOnProperty(name = [TracingExporterProviderConfigurationKey],havingValue = "kafka",matchIfMissing = true)
+        @ConditionalOnProperty(name = [TracingExporterProviderConfigurationKey],havingValue = "kafka",matchIfMissing = false)
         fun kafkaSpanExporter(environment: Environment, properties: TelemetryProperties): KafkaSpanExporter {
             return KafkaSpanExporter(environment, properties.tracing)
         }
@@ -75,6 +76,7 @@ class TelemetryAutoConfiguration {
         }
 
         @Bean
+        @Lazy
         fun tracerFactoryBean(tracingManager: TracingManager): TracerFactoryBean {
             return TracerFactoryBean(tracingManager)
         }

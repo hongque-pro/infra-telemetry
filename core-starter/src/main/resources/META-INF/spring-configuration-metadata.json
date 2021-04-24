@@ -87,6 +87,9 @@
         },
         {
           "value": "logging"
+        },
+        {
+          "value": "none"
         }
       ]
     },
