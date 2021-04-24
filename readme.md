@@ -17,7 +17,7 @@
 
 - 使用通过将 SpanExporter 注册为 bean 来添加自定义导出器
 
-- 默认内置 kafka 导出器（通过 infra.telemetry.tracing.built-in-exporter 设置为 None 可以关闭）
+- 默认内置 kafka 导出器（通过 **infra.telemetry.tracing.exporter.provider** 设置为 **none** 可以关闭）
 
 ## 默认配置参考（如果不添加任何配置以下配置将生效）
 
