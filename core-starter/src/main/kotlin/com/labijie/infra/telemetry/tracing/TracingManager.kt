@@ -101,8 +101,9 @@ class TracingManager(
         if (properties.exporter.provider == EXPORTER_KAFKA) {
             sb.appendLine("configured exporter: ${properties.exporter}, make sure 'org.apache.kafka:kafka-clients' package is in your classpath.")
         }
+
         logger.warn(sb.toString())
-        return listOf()
+        return listOf(NoopSpanProcessor)
     }
 
     private val sdk: OpenTelemetry by lazy {

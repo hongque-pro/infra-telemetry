@@ -31,7 +31,7 @@ class TelemetryBootstrapRunner : CommandLineRunner, ApplicationContextAware {
     override fun run(vararg args: String?) {
         val properties = this.applicationContext.getBean(TelemetryProperties::class.java)
         val exporters =
-            this.applicationContext.getBeanProvider(SpanExporter::class.java).stream().collect(Collectors.toList())
+                this.applicationContext.getBeanProvider(SpanExporter::class.java).stream().collect(Collectors.toList())
         try {
             val initializers = this.applicationContext.getBeanProvider(ITelemetryInitializer::class.java)
             initializers.orderedStream().forEach {
@@ -42,9 +42,9 @@ class TelemetryBootstrapRunner : CommandLineRunner, ApplicationContextAware {
             exitProcess(-9999)
         }
         val stringBuilder = StringBuilder()
-            .appendLine("Infra telemetry service was initialized.")
-            .appendLine("Exporter configuration: ${properties.tracing.exporter}")
-            .appendLine("Exporter class: ${if (exporters.isEmpty()) "<null>" else exporters.first()::class.java.simpleName}")
+                .appendLine("Infra telemetry service was initialized.")
+                .appendLine("Exporter configuration: ${properties.tracing.exporter}")
+                .appendLine("Exporter: ${if (exporters.isEmpty()) "none" else exporters.first()::class.java.simpleName}")
         logger.info(stringBuilder.toString())
     }
 }

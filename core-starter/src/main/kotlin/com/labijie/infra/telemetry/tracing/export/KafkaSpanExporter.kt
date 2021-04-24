@@ -43,9 +43,7 @@ open class KafkaSpanExporter(
     }
 
 
-    private val kafkaProducer = createProducer()
-
-    private fun createProducer(): KafkaProducer<String, ByteArray> {
+    private val kafkaProducer: KafkaProducer<String, ByteArray> by lazy {
         val ps = tracingProperties.exporter.properties.propsToKafkaMap()
         ps.checkKey(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG)
         if (ps.putIfAbsent(ProducerConfig.CLIENT_ID_CONFIG, environment.getApplicationName(false)) != null) {
@@ -55,7 +53,7 @@ open class KafkaSpanExporter(
         ps.putIfAbsent(ProducerConfig.ACKS_CONFIG, "0")
         ps[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = StringSerializer::class.java.name
         ps[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = ByteArraySerializer::class.java.name
-        return KafkaProducer(ps)
+        KafkaProducer(ps)
     }
 
     private fun Map<String, Any>.checkKey(key: String) {

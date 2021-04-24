@@ -6,6 +6,5 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class DummyController {
-    @Autowired
-    private lateinit var tracer: Tracer
+
 }
