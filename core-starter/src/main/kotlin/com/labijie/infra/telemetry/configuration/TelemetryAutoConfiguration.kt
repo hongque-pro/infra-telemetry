@@ -6,7 +6,7 @@ import com.labijie.infra.telemetry.configuration.tracing.TracerFactoryBean
 import com.labijie.infra.telemetry.tracing.TracingManager
 import com.labijie.infra.telemetry.tracing.export.KafkaSpanExporter
 import com.labijie.infra.telemetry.tracing.export.LoggingSpanExporter
-import io.opentelemetry.api.trace.propagation.HttpTraceContext
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.sdk.trace.export.SpanExporter
 import org.springframework.beans.factory.ObjectProvider
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.boot.info.GitProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.env.Environment
@@ -27,8 +26,7 @@ class TelemetryAutoConfiguration {
     companion object {
         const val MetricEnabledConfigurationKey = "infra.telemetry.tracing.metric.enabled"
         const val TracingEnabledConfigurationKey = "infra.telemetry.tracing.enabled"
-        const val TracingExporterConfigurationKey = "infra.telemetry.tracing.exporter"
-        const val TracingPropertiesConfigurationKey = "infra.telemetry.tracing.processor-properties"
+        const val TracingExporterProviderConfigurationKey = "infra.telemetry.tracing.exporter.provider"
     }
 
     @Bean
@@ -37,28 +35,16 @@ class TelemetryAutoConfiguration {
     }
 
     @Configuration
-    @ConditionalOnProperty(
-        name = [TracingEnabledConfigurationKey],
-        havingValue = "true",
-        matchIfMissing = true
-    )
+    @ConditionalOnProperty(name = [TracingEnabledConfigurationKey], havingValue = "true",matchIfMissing = true)
     protected class TracingAutoConfiguration {
 
         @Bean
-        @ConditionalOnProperty(
-            name = [TracingExporterConfigurationKey],
-            havingValue = "logging",
-            matchIfMissing = false
-        )
+        @ConditionalOnProperty(name = [TracingExporterProviderConfigurationKey], havingValue = "logging", matchIfMissing = false)
         fun loggingSpanExporter(): LoggingSpanExporter = LoggingSpanExporter()
 
         @Bean
         @ConditionalOnClass(name = ["org.apache.kafka.clients.producer.KafkaProducer"])
-        @ConditionalOnProperty(
-            name = [TracingExporterConfigurationKey],
-            havingValue = "kafka",
-            matchIfMissing = true
-        )
+        @ConditionalOnProperty(name = [TracingExporterProviderConfigurationKey],havingValue = "kafka",matchIfMissing = true)
         fun kafkaSpanExporter(environment: Environment, properties: TelemetryProperties): KafkaSpanExporter {
             return KafkaSpanExporter(environment, properties.tracing)
         }
@@ -66,23 +52,26 @@ class TelemetryAutoConfiguration {
 
         @Bean
         fun tracingManager(
-            environment: Environment,
-            idGenerator: IIdGenerator,
-            telemetryProperties: TelemetryProperties,
-            exporters: ObjectProvider<SpanExporter>,
-            @Autowired(required = false)
-            textMapPropagator: TextMapPropagator?
+                environment: Environment,
+                idGenerator: IIdGenerator,
+                telemetryProperties: TelemetryProperties,
+                exporters: ObjectProvider<SpanExporter>,
+                @Autowired(required = false)
+                textMapPropagator: TextMapPropagator?
         ): TracingManager {
+
+            val propagator = textMapPropagator ?:W3CTraceContextPropagator.getInstance()
 
             val exporterList = exporters.orderedStream().collect(Collectors.toList())
             val applicationName: String? = environment.getProperty("spring.application.name")
-            return TracingManager(
-                applicationName,
-                idGenerator,
-                telemetryProperties.tracing,
-                exporterList,
-                textMapPropagator ?: HttpTraceContext.getInstance()
+            TracingManager.instance = TracingManager(
+                    applicationName,
+                    idGenerator,
+                    telemetryProperties.tracing,
+                    exporterList,
+                    propagator
             )
+            return TracingManager.instance
         }
 
         @Bean
@@ -93,9 +82,9 @@ class TelemetryAutoConfiguration {
 
     @Configuration
     @ConditionalOnProperty(
-        name = [MetricEnabledConfigurationKey],
-        havingValue = "true",
-        matchIfMissing = true
+            name = [MetricEnabledConfigurationKey],
+            havingValue = "true",
+            matchIfMissing = true
     )
     protected class MetricAutoConfiguration {
 

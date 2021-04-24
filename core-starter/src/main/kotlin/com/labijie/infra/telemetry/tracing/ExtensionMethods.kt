@@ -5,10 +5,12 @@ import io.opentelemetry.api.trace.Tracer
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.Scope
 
-fun Tracer.extractSpan(map: Map<String, Any>, context: Context? = null): Span = TracingManager.extractSpan(map, context)
+
+fun Tracer.extractSpan(map: Map<String, Any>, context: Context? = null): Span =
+        TracingManager.mustBeInstance().extractSpan(map, context)
 
 fun Tracer.injectSpan(map: MutableMap<String, in String>, context: Context? = null) =
-    TracingManager.injectSpan(map, context)
+        TracingManager.mustBeInstance().injectSpan(map, context)
 
 
 val Context.span: Span?

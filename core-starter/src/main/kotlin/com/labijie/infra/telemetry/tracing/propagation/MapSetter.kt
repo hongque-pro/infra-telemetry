@@ -1,8 +1,8 @@
 package com.labijie.infra.telemetry.tracing.propagation
 
-import io.opentelemetry.context.propagation.TextMapPropagator
+import io.opentelemetry.context.propagation.TextMapSetter
 
-class MapSetter private constructor(prefix: String? = null) : TextMapPropagator.Setter<MutableMap<String,in String>> {
+class MapSetter private constructor(prefix: String? = null) : TextMapSetter<MutableMap<String,in String>> {
     companion object {
         @JvmStatic
         val INSTANCE: MapSetter by lazy {

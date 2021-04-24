@@ -34,10 +34,10 @@ open class KafkaSpanExporter(
         }
     }
 
-    private val topic: String = tracingProperties.exporterProperties.getOrDefault("topic", "telemetry-spans").toString()
+    private val topic: String = tracingProperties.exporter.properties.getOrDefault("topic", "telemetry-spans").toString()
 
     init {
-        if (!tracingProperties.exporterProperties.contains("topic")) {
+        if (!tracingProperties.exporter.properties.contains("topic")) {
             logger.warn("Kafka trace exporter missed property 'topic' for kafka exporter:  'telemetry-spans' be used.")
         }
     }
@@ -46,7 +46,7 @@ open class KafkaSpanExporter(
     private val kafkaProducer = createProducer()
 
     private fun createProducer(): KafkaProducer<String, ByteArray> {
-        val ps = tracingProperties.exporterProperties.propsToKafkaMap()
+        val ps = tracingProperties.exporter.properties.propsToKafkaMap()
         ps.checkKey(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG)
         if (ps.putIfAbsent(ProducerConfig.CLIENT_ID_CONFIG, environment.getApplicationName(false)) != null) {
             logger.warn("Kafka trace exporter missed property '${ProducerConfig.CLIENT_ID_CONFIG}' for kafka exporter:  'infra-telemetry-exporter' be used.")
@@ -61,7 +61,7 @@ open class KafkaSpanExporter(
     private fun Map<String, Any>.checkKey(key: String) {
         if (!this.containsKey(key)) {
             val str = StringBuilder()
-            str.appendLine("${TelemetryAutoConfiguration.TracingPropertiesConfigurationKey} missed property '$key' for kafka exporter.")
+            str.appendLine("${TelemetryAutoConfiguration.TracingExporterProviderConfigurationKey} missed property '$key' for kafka exporter.")
             str.appendLine("Other kafka configuration reference: ")
             str.appendLine("https://kafka.apache.org/documentation/#producerconfigs")
             throw RuntimeException(str.toString())

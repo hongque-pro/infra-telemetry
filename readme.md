@@ -19,6 +19,27 @@
 
 - 默认内置 kafka 导出器（通过 infra.telemetry.tracing.built-in-exporter 设置为 None 可以关闭）
 
+## 默认配置参考（如果不添加任何配置以下配置将生效）
+
+```yaml
+infra:
+  telemetry:
+    metric:
+      enabled: true
+    tracing:
+      enabled: true
+      exporter:
+        provider: kafka
+        properties:
+          bootstrap.servers: '127.0.0.1:9092'
+          topic: telemetry-spans
+        batch:
+          export-timeout: 10s
+          max-export-batch-Size: 512
+          max-queue-size: 1024
+          scheduled-delay: 5s
+```
+
 ## 非 Web 应用
 
 通过应用 EnableMiniWebServerForPrometheus 注解开启 actuator endpoint，需要引入 webflux 包

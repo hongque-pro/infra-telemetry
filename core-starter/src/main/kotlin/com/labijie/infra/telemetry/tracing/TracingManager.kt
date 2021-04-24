@@ -1,22 +1,22 @@
 package com.labijie.infra.telemetry.tracing
 
 import com.labijie.infra.IIdGenerator
+import com.labijie.infra.telemetry.configuration.tracing.EXPORTER_KAFKA
 import com.labijie.infra.telemetry.configuration.tracing.TracingProperties
+import com.labijie.infra.telemetry.configuration.tracing.configure
 import com.labijie.infra.telemetry.tracing.propagation.MapGetter
 import com.labijie.infra.telemetry.tracing.propagation.MapSetter
 import com.labijie.infra.utils.ifNullOrBlank
 import io.opentelemetry.api.OpenTelemetry
 import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.Tracer
-import io.opentelemetry.api.trace.propagation.HttpTraceContext
 import io.opentelemetry.context.Context
-import io.opentelemetry.context.propagation.DefaultContextPropagators
+import io.opentelemetry.context.propagation.ContextPropagators
 import io.opentelemetry.context.propagation.TextMapPropagator
 import io.opentelemetry.sdk.OpenTelemetrySdk
-import io.opentelemetry.sdk.common.export.ConfigBuilder
-import io.opentelemetry.sdk.trace.MultiSpanProcessor
+import io.opentelemetry.sdk.resources.Resource
+import io.opentelemetry.sdk.trace.SdkTracerProvider
 import io.opentelemetry.sdk.trace.SpanProcessor
-import io.opentelemetry.sdk.trace.TracerSdkProvider
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor
 import io.opentelemetry.sdk.trace.export.SpanExporter
@@ -27,29 +27,28 @@ import java.util.*
 
 
 class TracingManager(
-    private val applicationName: String?,
-    private val idGenerator: IIdGenerator,
-    private val properties: TracingProperties,
-    private val exporters: List<SpanExporter>,
-    private val textMapPropagator: TextMapPropagator? = null
+        private val applicationName: String?,
+        private val idGenerator: IIdGenerator,
+        private val properties: TracingProperties,
+        private val exporters: List<SpanExporter>,
+        private val propagators: TextMapPropagator
 ) : DisposableBean {
     companion object {
         private val logger = LoggerFactory.getLogger(TracingManager::class.java)
 
-        fun extractSpan(map: Map<String, Any>, context: Context? = null): Span {
-            val propagator = OpenTelemetry.getGlobalPropagators().textMapPropagator
-            val ctx = context ?: Context.current()
-            propagator.extract(ctx, map, MapGetter.INSTANCE)
-            return Span.fromContext(ctx)
-        }
+        @JvmStatic
+        lateinit var instance: TracingManager
 
-        fun injectSpan(map: MutableMap<String, in String>, context: Context? = null) {
-            val propagator = OpenTelemetry.getGlobalPropagators().textMapPropagator
-            propagator.inject(context ?: Context.current(), map, MapSetter.INSTANCE)
+        @JvmStatic
+        fun mustBeInstance(): TracingManager {
+            if (!::instance.isInitialized){
+                throw RuntimeException("TracingManager instance is not ready, please initialize it by assigning TracingManager.Instance")
+            }
+            return instance
         }
     }
 
-    private var version: String = "0.0.0.0"
+    private var version: String = "0.0.0"
 
     init {
         ClassUtils.getDefaultClassLoader()?.getResourceAsStream("telemetry-git.properties")?.let {
@@ -61,62 +60,82 @@ class TracingManager(
         }
     }
 
-    private fun configureSdk() {
-        val defaultContextPropagators = DefaultContextPropagators.builder()
-            .addTextMapPropagator(this.textMapPropagator ?: HttpTraceContext.getInstance())
-            .build()
-
-        val tracerSdkProvider= TracerSdkProvider
-            .builder()
-            .setIdsGenerator(TelemetryIdsGenerator(idGenerator))
-            .build()
-
-        val sdk = OpenTelemetrySdk.builder()
-            .setPropagators(defaultContextPropagators)
-            .setTracerProvider(tracerSdkProvider)
-            .build()
-        OpenTelemetry.set(sdk)
+    fun extractSpan(map: Map<String, Any>, context: Context? = null): Span {
+        val propagator = this.propagators
+        val ctx = context ?: Context.current()
+        propagator.extract(ctx, map, MapGetter.INSTANCE)
+        return Span.fromContext(ctx)
     }
 
-    private fun <T : ConfigBuilder<*>> T.configureProcessorBuilder(): T {
-        val props = Properties()
-        properties.processorProperties.forEach { (key, value) ->
-            if (value.isNotBlank()) {
-                props[key] = value
-            }
-        }
-        this.readProperties(props)
-        this.readEnvironmentVariables()
-        return this
+    fun injectSpan(map: MutableMap<String, in String>, context: Context? = null) {
+        val propagator = this.propagators
+        propagator.inject(context ?: Context.current(), map, MapSetter.INSTANCE)
     }
 
-    private fun SpanExporter.createProcessor(exportStrategy: ExportStrategy): SpanProcessor {
-        return when (exportStrategy) {
-            ExportStrategy.Batch -> BatchSpanProcessor.builder(this).configureProcessorBuilder().build()
-            ExportStrategy.Simple -> SimpleSpanProcessor.builder(this).configureProcessorBuilder().build()
+    private fun SpanExporter.createProcessor(properties: TracingProperties): SpanProcessor {
+        return when (properties.exporter.strategy) {
+            ExportStrategy.Batch -> BatchSpanProcessor.builder(this).configure(properties.exporter.batch).build()
+            ExportStrategy.Simple -> SimpleSpanProcessor.create(this)
         }
     }
+
+//    private fun <T : ConfigBuilder<*>> T.configureProcessorBuilder(): T {
+//        val props = Properties()
+//        properties.processorProperties.forEach { (key, value) ->
+//            if (value.isNotBlank()) {
+//                props[key] = value
+//            }
+//        }
+//        this.readProperties(props)
+//        this.readEnvironmentVariables()
+//        return this
+//    }
+
+    private fun mapProcessor(): List<SpanProcessor> {
+        if (exporters.count() > 0) {
+            return exporters.map { it.createProcessor(properties) }
+        }
+
+        val sb = StringBuilder()
+        sb.appendLine()
+        if (properties.exporter.provider == EXPORTER_KAFKA) {
+            sb.appendLine("configured exporter: ${properties.exporter}, make sure 'org.apache.kafka:kafka-clients' package is in your classpath.")
+        }
+        logger.warn(sb.toString())
+        return listOf()
+    }
+
+    private val sdk: OpenTelemetry by lazy {
+
+        val resource = Resource.builder()
+                .put("application", this.applicationName)
+                .build()
+
+
+        val sdkTracerProvider = SdkTracerProvider.builder()
+                .also {
+                    this.mapProcessor().forEach { processor ->
+                        it.addSpanProcessor(processor)
+                    }
+                }
+                .setResource(resource)
+                .setIdGenerator(TelemetryIdsGenerator(idGenerator))
+                .build()
+
+
+        OpenTelemetrySdk.builder()
+                .setPropagators(ContextPropagators.create(this.propagators))
+                .setTracerProvider(sdkTracerProvider)
+                .build()
+    }
+
 
     val tracer: Tracer by lazy {
-        configureSdk()
-        val tracer = OpenTelemetry.getGlobalTracer(
-            "com.labijie.infra.telemetry", version)
-
-        val tracerSdkManagement = OpenTelemetrySdk.getGlobalTracerManagement()
-        if (exporters.count() > 0) {
-            val processors = exporters.map { it.createProcessor(properties.exportStrategy) }
-            val processor =
-                if (processors.count() > 1) MultiSpanProcessor.create(processors) else processors.first()
-            tracerSdkManagement.addSpanProcessor(processor)
-        } else {
-            logger.warn("Can not found any trace exportor, configured exporter: ${properties.exporter}, make sure 'org.apache.kafka:kafka-clients' package is in your classpath.")
-        }
-
-        tracer
+        this.sdk.getTracer("labijie-infra-telemetry", this.version)
     }
 
     override fun destroy() {
-        OpenTelemetrySdk.getGlobalTracerManagement().shutdown()
+        (this.sdk.tracerProvider as? SdkTracerProvider)?.shutdown()
     }
 
 }

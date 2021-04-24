@@ -2,5 +2,17 @@ server:
   port: 29292
 infra:
   telemetry:
+    metric:
+      enabled: true
     tracing:
-      exporter: logging
+      enabled: true
+      exporter:
+        provider: kafka
+        properties:
+          bootstrap.servers: '127.0.0.1:9092'
+          topic: telemetry-spans
+        batch:
+          export-timeout: 10s
+          max-export-batch-Size: 512
+          max-queue-size: 1024
+          scheduled-delay: 5s

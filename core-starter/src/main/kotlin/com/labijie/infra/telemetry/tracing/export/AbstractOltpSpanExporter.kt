@@ -1,6 +1,5 @@
 package com.labijie.infra.telemetry.tracing.export
 
-import com.labijie.infra.telemetry.proto.ReflectSpanAdapter
 import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
 import io.opentelemetry.sdk.common.CompletableResultCode
 import io.opentelemetry.sdk.trace.data.SpanData
@@ -10,7 +9,7 @@ abstract class AbstractOltpSpanExporter : SpanExporter {
 
     override fun export(spans: MutableCollection<SpanData>): CompletableResultCode {
         if(spans.isNotEmpty()) {
-            val protoSpans = ReflectSpanAdapter.toProtoResourceSpans(spans)
+            val protoSpans = SpanAdapter.toProtoResourceSpans(spans)
 
             val exportTraceServiceRequest = ExportTraceServiceRequest.newBuilder()
                 .addAllResourceSpans(protoSpans)
