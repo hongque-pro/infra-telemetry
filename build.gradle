@@ -10,7 +10,7 @@ buildscript {
 
         kafka_version='2.8.0'
 
-        micrometer_version = '1.6.6'
+        micrometer_version = '1.7.2'
         prometheus_version='0.10.0'
 
         kryo_version = '5.1.0'
@@ -62,7 +62,7 @@ static getPropertyOrCmdArgs(Project project, String propertyName, String cmdArgN
 
 allprojects {
     group 'com.labijie.infra'
-    version '1.1.0'
+    version '1.1.1'
 
     apply plugin: 'kotlin'
     apply plugin: 'java'
