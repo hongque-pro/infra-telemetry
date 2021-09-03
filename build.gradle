@@ -26,7 +26,10 @@ buildscript {
         repositories {
             mavenLocal()
             if(maven_repo != null) {
-                maven { url maven_repo }
+                maven {
+                    allowInsecureProtocol=true
+                    url maven_repo
+                }
             }
             jcenter()
             mavenCentral()
