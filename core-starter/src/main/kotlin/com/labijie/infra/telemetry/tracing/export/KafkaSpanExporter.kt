@@ -3,8 +3,9 @@ package com.labijie.infra.telemetry.tracing.export
 import com.labijie.infra.spring.configuration.getApplicationName
 import com.labijie.infra.telemetry.configuration.TelemetryAutoConfiguration
 import com.labijie.infra.telemetry.configuration.tracing.TracingProperties
+import com.labijie.infra.telemetry.tracing.Utils.toByteArray
 import com.labijie.infra.utils.throwIfNecessary
-import io.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest
+import io.opentelemetry.exporter.otlp.internal.traces.TraceRequestMarshaler
 import io.opentelemetry.sdk.common.CompletableResultCode
 import org.apache.kafka.clients.producer.KafkaProducer
 import org.apache.kafka.clients.producer.ProducerConfig
@@ -74,7 +75,8 @@ open class KafkaSpanExporter(
         }
     }
 
-    override fun exportRequest(request: ExportTraceServiceRequest) {
+    override fun exportRequest(request: TraceRequestMarshaler) {
+
         val record = ProducerRecord<String, ByteArray>(this.topic, request.toByteArray())
         kafkaProducer.send(record)
     }

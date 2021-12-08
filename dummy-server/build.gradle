@@ -1,6 +1,0 @@
-apply plugin: "org.springframework.boot"
-dependencies {
-    implementation project(":core-starter")
-    implementation "org.springframework.boot:spring-boot-starter-web"
-    implementation "org.apache.kafka:kafka-clients:$kafka_version"
-}

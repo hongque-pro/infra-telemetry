@@ -27,11 +27,11 @@ import java.util.*
 
 
 class TracingManager(
-        private val applicationName: String?,
-        private val idGenerator: IIdGenerator,
-        private val properties: TracingProperties,
-        private val exporters: List<SpanExporter>,
-        private val propagators: TextMapPropagator
+    private val applicationName: String?,
+    private val idGenerator: IIdGenerator,
+    private val properties: TracingProperties,
+    private val exporters: List<SpanExporter>,
+    private val propagators: TextMapPropagator
 ) : DisposableBean {
     companion object {
         private val logger = LoggerFactory.getLogger(TracingManager::class.java)
@@ -41,7 +41,7 @@ class TracingManager(
 
         @JvmStatic
         fun mustBeInstance(): TracingManager {
-            if (!::instance.isInitialized){
+            if (!::instance.isInitialized) {
                 throw RuntimeException("TracingManager instance is not ready, please initialize it by assigning TracingManager.Instance")
             }
             return instance
@@ -92,7 +92,7 @@ class TracingManager(
 //    }
 
     private fun mapProcessor(): List<SpanProcessor> {
-        if (exporters.count() > 0) {
+        if (exporters.isNotEmpty()) {
             return exporters.map { it.createProcessor(properties) }
         }
 
@@ -109,25 +109,28 @@ class TracingManager(
     private val sdk: OpenTelemetry by lazy {
 
         val resource = Resource.builder()
-                .put("application", this.applicationName)
-                .build()
-
+            .also {
+                if(!applicationName.isNullOrBlank()){
+                    it.put("application", this.applicationName)
+                }
+            }
+            .build()
 
         val sdkTracerProvider = SdkTracerProvider.builder()
-                .also {
-                    this.mapProcessor().forEach { processor ->
-                        it.addSpanProcessor(processor)
-                    }
+            .also {
+                this.mapProcessor().forEach { processor ->
+                    it.addSpanProcessor(processor)
                 }
-                .setResource(resource)
-                .setIdGenerator(TelemetryIdsGenerator(idGenerator))
-                .build()
+            }
+            .setResource(resource)
+            .setIdGenerator(TelemetryIdsGenerator(idGenerator))
+            .build()
 
 
         OpenTelemetrySdk.builder()
-                .setPropagators(ContextPropagators.create(this.propagators))
-                .setTracerProvider(sdkTracerProvider)
-                .build()
+            .setPropagators(ContextPropagators.create(this.propagators))
+            .setTracerProvider(sdkTracerProvider)
+            .build()
     }
 
 

@@ -1,5 +1,6 @@
 server:
   port: 29292
+
 infra:
   telemetry:
     metric:
@@ -7,7 +8,7 @@ infra:
     tracing:
       enabled: true
       exporter:
-        provider: kafka
+        provider: logging
         properties:
           bootstrap.servers: '127.0.0.1:9092'
           topic: telemetry-spans

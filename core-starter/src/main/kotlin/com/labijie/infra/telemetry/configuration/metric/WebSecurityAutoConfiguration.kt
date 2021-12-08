@@ -8,10 +8,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.web.server.ServerHttpSecurity
+import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.server.SecurityWebFilterChain
 
 @Configuration
@@ -33,15 +35,18 @@ class WebSecurityAutoConfiguration {
 
     @Configuration
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-    @ConditionalOnClass(WebSecurityConfigurerAdapter::class)
+    @ConditionalOnClass(WebSecurityConfiguration::class)
     protected class ServletAutoConfiguration {
 
-        @Order(-1)
+        @Order(Ordered.HIGHEST_PRECEDENCE)
         @ConditionalOnBean(WebSecurityConfiguration::class)
         @ConditionalOnProperty(value = [MetricEnabledConfigurationKey], matchIfMissing = true)
         @Bean
-        fun actuatorServletSecurity(): ActuatorWebSecurityConfigurerAdapter {
-            return ActuatorWebSecurityConfigurerAdapter()
+        fun actuatorServletSecurity(httpSecurity: HttpSecurity): SecurityFilterChain? {
+            val matcher = org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest.toAnyEndpoint()
+            httpSecurity.requestMatcher(matcher).authorizeRequests()
+                .anyRequest().permitAll()
+            return httpSecurity.build()
         }
     }
 }
