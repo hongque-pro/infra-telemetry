@@ -42,7 +42,7 @@ class WebSecurityAutoConfiguration {
         @ConditionalOnBean(WebSecurityConfiguration::class)
         @ConditionalOnProperty(value = [MetricEnabledConfigurationKey], matchIfMissing = true)
         @Bean
-        fun actuatorServletSecurity(httpSecurity: HttpSecurity): SecurityFilterChain? {
+        fun actuatorServletChain(httpSecurity: HttpSecurity): SecurityFilterChain? {
             val matcher = org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest.toAnyEndpoint()
             httpSecurity.requestMatcher(matcher).authorizeRequests()
                 .anyRequest().permitAll()
