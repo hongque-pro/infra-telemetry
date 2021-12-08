@@ -20,7 +20,7 @@ import org.springframework.context.annotation.Lazy
 import org.springframework.core.env.Environment
 import java.util.stream.Collectors
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 @EnableConfigurationProperties(TelemetryProperties::class)
 class TelemetryAutoConfiguration {
 
@@ -35,7 +35,7 @@ class TelemetryAutoConfiguration {
         return TelemetryBootstrapRunner()
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(name = [TracingEnabledConfigurationKey], havingValue = "true",matchIfMissing = true)
     protected class TracingAutoConfiguration {
 
@@ -82,7 +82,7 @@ class TelemetryAutoConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnProperty(
             name = [MetricEnabledConfigurationKey],
             havingValue = "true",

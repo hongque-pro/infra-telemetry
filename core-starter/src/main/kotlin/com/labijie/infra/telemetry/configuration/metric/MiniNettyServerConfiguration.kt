@@ -4,7 +4,7 @@ import org.springframework.boot.web.embedded.netty.NettyReactiveWebServerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class MiniNettyServerConfiguration {
     @Bean
     fun nettyReactiveWebServerFactory(): NettyReactiveWebServerFactory {

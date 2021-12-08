@@ -16,9 +16,9 @@ import org.springframework.security.config.web.server.ServerHttpSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.server.SecurityWebFilterChain
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 class WebSecurityAutoConfiguration {
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.REACTIVE)
     @ConditionalOnClass(ServerHttpSecurity::class, SecurityWebFilterChain::class)
     protected  class WebFluxAutoConfiguration {
@@ -33,7 +33,7 @@ class WebSecurityAutoConfiguration {
         }
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
     @ConditionalOnClass(WebSecurityConfiguration::class)
     protected class ServletAutoConfiguration {
