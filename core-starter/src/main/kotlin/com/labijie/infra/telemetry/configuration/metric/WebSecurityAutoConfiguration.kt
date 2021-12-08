@@ -2,7 +2,6 @@ package com.labijie.infra.telemetry.configuration.metric
 
 import com.labijie.infra.telemetry.configuration.TelemetryAutoConfiguration.Companion.MetricEnabledConfigurationKey
 import org.springframework.boot.actuate.autoconfigure.security.reactive.EndpointRequest
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
@@ -39,7 +38,7 @@ class WebSecurityAutoConfiguration {
     protected class ServletAutoConfiguration {
 
         @Order(Ordered.HIGHEST_PRECEDENCE)
-        @ConditionalOnBean(WebSecurityConfiguration::class)
+        @ConditionalOnClass(WebSecurityConfiguration::class)
         @ConditionalOnProperty(value = [MetricEnabledConfigurationKey], matchIfMissing = true)
         @Bean
         fun actuatorServletChain(httpSecurity: HttpSecurity): SecurityFilterChain? {
