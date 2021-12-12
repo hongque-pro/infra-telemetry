@@ -5,14 +5,13 @@ plugins {
 
 allprojects {
     group = "com.labijie.infra"
-    version = "1.2.1"
+    version = "1.2.2"
 
     infra {
         useDefault {
             includeSource = true
             infraBomVersion = Versions.infraBom
             kotlinVersion = Versions.kotlin
-            useMavenProxy = true
             useMavenProxy = false
         }
 
